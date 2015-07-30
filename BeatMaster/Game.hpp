@@ -113,7 +113,7 @@ public:
   virtual ~BitmapRenderer() {}
 
   // Useful for printing stats (like fps/score)
-  virtual void RenderToBitmap(HDC screenDC) {
+  virtual void RenderToBitmap(HDC screenDC, int w, int h) {
     // Will deal with getting the fps data here later.
     ++m_elapsedFrames;
     if (GetTickCount() - m_startTime > 1000) {
@@ -129,8 +129,8 @@ public:
       m_startTime = GetTickCount();
     }
 
-    TextOut(screenDC, 0, 0, m_fps.c_str(), m_fps.length());
-    TextOut(screenDC, 0, 12, m_ticks.c_str(), m_ticks.length());
+    TextOut(screenDC, 0, h - 32, m_fps.c_str(), m_fps.length());
+    TextOut(screenDC, 0, h - 16, m_ticks.c_str(), m_ticks.length());
   }
 
   virtual void HandleOutput(VOID *output) {}
@@ -153,11 +153,6 @@ void handle_player_movement(math::vec8 &player, int dir, double millis,
                             double fps) {
   double xpf = math::compute_units(320.0, millis, fps);
   double ypf = math::compute_units(240.0, millis, fps);
-  if (dir == -1) {
-    dir = -1;
-    player.v[2] = 0;
-    player.v[3] = 0;
-  }
 
   if (dir == 0)
     player.v[2] = -xpf;
@@ -167,9 +162,39 @@ void handle_player_movement(math::vec8 &player, int dir, double millis,
     player.v[3] = ypf;
   if (dir == 3)
     player.v[3] = -ypf;
+
+  if (dir == -1) {
+    dir = -1;
+    player.v[2] = 0;
+    player.v[3] = 0;
+  }
+  if (player.v[1] < 32)
+    player.v[3] = 1;
 }
 
-void handle_enemy_movement(math::vec8 &enemy, double millis, double fps) {}
+void handle_enemy_movement(math::vec8 &enemy, const math::vec4 &clip,
+                           double millis, double fps) {
+  double ypf = math::compute_units(80.0, millis, fps);
+  if (enemy.v[4] != 0 && enemy.v[3] == 0)
+    enemy.v[3] = -ypf;
+  else if (enemy.v[4] == 0) {
+    enemy.v[0] = (rand() % static_cast<int>(clip.v[2])) + clip.v[0];
+    enemy.v[1] = (rand() % static_cast<int>(clip.v[3])) + clip.v[1];
+    enemy.v[4] = 1;
+  }
+}
+
+void handle_projectile_movement(math::vec8 &projectile, const math::vec4 &clip,
+                                double millis, double fps) {
+  double ypf = math::compute_units(160.0, millis, fps);
+  if (projectile.v[4] != 0 && projectile.v[3] == 0)
+    projectile.v[3] = -ypf;
+  else if (projectile.v[4] == 0) {
+    projectile.v[0] = (rand() % static_cast<int>(clip.v[2])) + clip.v[0];
+    projectile.v[1] = (rand() % static_cast<int>(clip.v[3])) + clip.v[1];
+    projectile.v[4] = 1;
+  }
+}
 
 void draw_units(const std::vector<texture> &tex, texture &fg,
                 std::vector<math::vec8> &units, double millis, double fps,
@@ -206,17 +231,9 @@ void draw_units(const std::vector<texture> &tex, texture &fg,
     i.v[1] += i.v[3];
 
     if (i.v[7] == 1.0)
-      handle_enemy_movement(i, millis, fps);
-#if 0
-    if (i.v[0] < 1 || i.v[0] > (fg.bounds.v[0] - 1) || i.v[1] < 1 ||
-        i.v[1] > (fg.bounds.v[1] - 1) || i.v[2] == 0 || i.v[3] == 0) {
-      i.v[0] = rand() % fg.bounds.v[0];
-      i.v[1] = rand() % fg.bounds.v[1];
-      i.v[2] = rand() % 4 - 2;
-      i.v[3] = rand() % 4 - 2;
-      continue;
-    }
-#endif // 0
+      handle_enemy_movement(i, clip, millis, fps);
+    else if (i.v[7] == 2.0)
+      handle_projectile_movement(i, clip, millis, fps);
 
     // For all items, we perform clipping.
     if (i.v[0] < clip.v[0])
@@ -333,7 +350,8 @@ void compute_shadows(texture &fg, texture &sg, const math::vec3 &light) {
 }
 
 void draw_stage(detail::Uint32 *buffer, const math::vec2 &iResolution,
-                texture &bg, texture &sg, texture &fg, double millis, int dir) {
+                texture &bg, texture &sg, texture &fg, texture &bar,
+                double millis, int dir) {
   double ratio_x = static_cast<double>(bg.bounds.v[0]) / iResolution.v[0];
   double ratio_y = static_cast<double>(bg.bounds.v[1]) / iResolution.v[1];
 
@@ -358,6 +376,23 @@ void draw_stage(detail::Uint32 *buffer, const math::vec2 &iResolution,
     }
     current_y += ratio_y;
     current_x = 0;
+  }
+
+  {
+    ratio_x = static_cast<double>(bar.bounds.v[0]) / iResolution.v[0];
+    current_x = 0;
+    current_y = 0;
+    // Simply overwrite whatever has been drawn already and draw our HUD on it.
+    for (int y = 0; y < ((bar.bounds.v[1] / ratio_y)); ++y) {
+      for (int x = 0; x < width; ++x) {
+        int idx = static_cast<int>(current_y) * bar.bounds.v[0] +
+                  static_cast<int>(current_x);
+        buffer[y * width + x] = bar.tex[idx];
+        current_x += ratio_x;
+      }
+      current_y += ratio_y;
+      current_x = 0;
+    }
   }
 }
 

@@ -26,6 +26,7 @@ DWORD WINAPI Update(LPVOID lpParameter) {
   int offset = 0;
   // This texture is simply the background image.
   game::texture bg("..//res//bg[0].graw");
+  game::texture bar("../res//bar.graw");
   game::texture img(math::vec2i(tw, th)); // the final composed image.
   game::texture fg(math::vec2i(tw, th));  // the image containing the sprites.
   game::texture sg(math::vec2i(tw, th));  // the shadow map
@@ -55,7 +56,7 @@ DWORD WINAPI Update(LPVOID lpParameter) {
     game::compute_shadows(fg, sg, light);
 
     // Composition everything onto the img buffer
-    game::draw_stage(buffer, iResolution, img, sg, fg, millis, dir);
+    game::draw_stage(buffer, iResolution, img, sg, fg, bar, millis, dir);
 
     g_renderer->screen.Flip(true);
     g_renderer->updateThread.Delay(1);

@@ -20,7 +20,7 @@ namespace detail {
 class IBitmapRenderer {
 public:
   virtual ~IBitmapRenderer() {}
-  virtual void RenderToBitmap(HDC screenDC) = 0;
+  virtual void RenderToBitmap(HDC screenDC, int w, int h) = 0;
   virtual void HandleOutput(VOID *output) = 0;
   virtual void HandleDirection(int direction) = 0;
 };
@@ -103,7 +103,7 @@ public:
 
     memcpy(m_screen, m_pixels, (m_w * m_h * (m_bpp / 8)));
     if (m_bitmapRenderer)
-      m_bitmapRenderer->RenderToBitmap(m_dc);
+      m_bitmapRenderer->RenderToBitmap(m_dc, m_w, m_h);
 
     // BitBlt(m_screenDC, 0, 0, m_w, m_h, m_dc, 0, 0, SRCCOPY);
     StretchBlt(m_screenDC, 0, 0, _WW, _WH, m_dc, 0, 0, m_w, m_h, SRCCOPY);
@@ -239,11 +239,11 @@ Renderer::Renderer(const char *const className, LPTHREAD_START_ROUTINE callback,
                          HBRUSH(COLOR_WINDOW + 1), 0, className,
                          LoadIcon(0, IDI_APPLICATION)};
   if (RegisterClassEx(&wndclass)) {
-	  HWND window = 0;
-	  {
-    RECT displayRC = {0, 0, _WIDTH, _HEIGHT};
-    // Get info on which monitor we want to use.
-    
+    HWND window = 0;
+    {
+      RECT displayRC = {0, 0, _WIDTH, _HEIGHT};
+      // Get info on which monitor we want to use.
+
       std::vector<RECT> monitors;
       EnumDisplayMonitors(NULL, NULL, forward::MonitorEnumProc,
                           reinterpret_cast<DWORD>(&monitors));
@@ -262,11 +262,11 @@ Renderer::Renderer(const char *const className, LPTHREAD_START_ROUTINE callback,
       displayRC.top = y;
       displayRC.right = displayRC.left + _WW;
       displayRC.bottom = displayRC.top + _WH;
-    
-    window = CreateWindowEx(0, className, "Utility Renderer",
-                                 WS_POPUPWINDOW, displayRC.left, displayRC.top,
-                                 _WW, _WH, 0, 0, GetModuleHandle(0), 0);
-  }
+
+      window = CreateWindowEx(0, className, "Utility Renderer", WS_POPUPWINDOW,
+                              displayRC.left, displayRC.top, _WW, _WH, 0, 0,
+                              GetModuleHandle(0), 0);
+    }
     if (window) {
 
       windowDC = GetWindowDC(window);

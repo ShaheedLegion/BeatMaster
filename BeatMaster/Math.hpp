@@ -248,7 +248,7 @@ typedef vector8<int> vec8i;
 
 // Compute distance to move based on
 double compute_units(double ups, double millis, double fps) {
-  if (millis == 0) // avoid armageddon.
+  if (millis == 0 || fps == 0) // avoid armageddon.
     return 0.0f;
 
   return (ups / fps);
