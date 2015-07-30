@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BeatMaster", "BeatMaster\BeatMaster.vcxproj", "{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+		RelWithDeb|Win32 = RelWithDeb|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}.Debug|Win32.Build.0 = Debug|Win32
+		{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}.Release|Win32.ActiveCfg = Release|Win32
+		{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}.Release|Win32.Build.0 = Release|Win32
+		{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}.RelWithDeb|Win32.ActiveCfg = RelWithDeb|Win32
+		{0967EE72-17E6-4DF4-BEDF-426FE766C4AD}.RelWithDeb|Win32.Build.0 = RelWithDeb|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
