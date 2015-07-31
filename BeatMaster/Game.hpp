@@ -179,8 +179,9 @@ void handle_enemy_movement(math::vec8 &enemy, const math::vec4 &clip,
     enemy.v[3] = -ypf;
   else if (enemy.v[4] == 0) {
     enemy.v[0] = (rand() % static_cast<int>(clip.v[2])) + clip.v[0];
-    enemy.v[1] = (rand() % static_cast<int>(clip.v[3])) + clip.v[1];
     enemy.v[4] = 1;
+  } else if (enemy.v[4] != 0 && enemy.v[1] < 16) {
+    enemy.v[1] = (rand() % static_cast<int>(clip.v[3])) + (clip.v[3]);
   }
 }
 
@@ -240,10 +241,6 @@ void draw_units(const std::vector<texture> &tex, texture &fg,
       i.v[0] = clip.v[0];
     if (i.v[0] > clip.v[2])
       i.v[0] = clip.v[2];
-    if (i.v[1] < clip.v[1])
-      i.v[1] = clip.v[1];
-    if (i.v[1] > clip.v[3])
-      i.v[1] = clip.v[3];
 
     const texture &item = tex[static_cast<int>(i.v[7])];
     int _y = 0;
@@ -252,9 +249,12 @@ void draw_units(const std::vector<texture> &tex, texture &fg,
       int _x = 0;
       for (int x = static_cast<int>(i.v[0] - (item.bounds.v[0] / 2));
            x < static_cast<int>(i.v[0] + (item.bounds.v[0] / 2)); ++x) {
-        detail::Uint32 col = item.tex[_y * item.bounds.v[0] + _x];
-        if (col)
-          fg.tex[y * fg.bounds.v[0] + x] = col;
+        // Check if the pixel is visible on the screen.
+        if (y >= 0 && x >= 0 && x < fg.bounds.v[0] && y < fg.bounds.v[1]) {
+          detail::Uint32 col = item.tex[_y * item.bounds.v[0] + _x];
+          if (col)
+            fg.tex[y * fg.bounds.v[0] + x] = col;
+        }
         ++_x;
       }
       ++_y;
