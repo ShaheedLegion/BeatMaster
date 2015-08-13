@@ -246,22 +246,13 @@ typedef vector5<int> vec5i;
 typedef vector8<double> vec8;
 typedef vector8<int> vec8i;
 
-// Compute distance to move based on
+// Compute distance to move based on fps.
 double compute_units(double ups, double millis, double fps) {
   if (millis == 0 || fps == 0) // avoid armageddon.
-    return 0.0f;
+    return 0;
 
-  return (ups / fps);
-
-  // We must assume that the delta has a resolution of about 16ms per frame.
-  // That way we know how large each delta value should be to constitute a
-  // frame.
-  // 1 second divided by current fps gives you the ideal delta per frame.
-  double ideal_delta = 1000.0 / fps;
-  double ideal_ups = ups / fps;
-
-  double c = millis / ideal_delta;
-  return ideal_ups * c;
+  double upif = ups / 60; // ups / 60 fps
+  return upif * (millis / 100.0);
 }
 
 } // namespace math

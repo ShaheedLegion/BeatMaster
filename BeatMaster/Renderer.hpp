@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <omp.h>
+#include "util.hpp"
 
 #define _WIDTH 640
 #define _HEIGHT 480
@@ -62,20 +63,19 @@ protected:
 typedef unsigned int Uint32;
 
 class RendererSurface {
+  static const int megabyte = 1048576;
+
 public:
   RendererSurface(int w, int h, int bpp, IBitmapRenderer *renderer)
-      : m_w(w), m_h(h), m_bpp(bpp), m_bitmapRenderer(renderer) {
-    m_pixels = new unsigned char[m_w * m_h * (m_bpp / 8)];
-    memset(m_pixels, 0, (m_w * m_h * (m_bpp / 8)));
-    m_backBuffer = new unsigned char[m_w * m_h * (m_bpp / 8)];
-    memset(m_backBuffer, 0, (m_w * m_h * (m_bpp / 8)));
+      : m_w(w), m_h(h), m_bpp(bpp), m_bitmapRenderer(renderer),
+        mem_source(10 * megabyte) {
+    m_pixels = mem_source.alloc(m_w * m_h * (m_bpp / 8));
+    m_backBuffer = mem_source.alloc(m_w * m_h * (m_bpp / 8));
   }
 
   ~RendererSurface() {}
 
   void Cleanup() {
-    delete[] m_pixels;
-    delete[] m_backBuffer;
     std::cout << "Destroying surface";
     m_pixels = nullptr;
     m_backBuffer = nullptr;
@@ -101,7 +101,7 @@ public:
     m_pixels = m_backBuffer;
     m_backBuffer = temp;
 
-    memcpy(m_screen, m_pixels, (m_w * m_h * (m_bpp / 8)));
+    util::memcpy(m_screen, m_pixels, (m_w * m_h));
     if (m_bitmapRenderer)
       m_bitmapRenderer->RenderToBitmap(m_dc, m_w, m_h);
 
@@ -109,7 +109,7 @@ public:
     StretchBlt(m_screenDC, 0, 0, _WW, _WH, m_dc, 0, 0, m_w, m_h, SRCCOPY);
 
     if (clear)
-      memset(m_backBuffer, 0, (m_w * m_h * (m_bpp / 8)));
+      util::memset(m_backBuffer, 0, (m_w * m_h));
   }
 
   Uint32 *GetPixels() { return reinterpret_cast<Uint32 *>(m_backBuffer); }
@@ -122,6 +122,8 @@ public:
 
   IBitmapRenderer *GetRenderer() const { return m_bitmapRenderer; }
 
+  util::mem_pool &GetAllocator() { return mem_source; }
+
 protected:
   unsigned char *m_pixels;
   unsigned char *m_backBuffer;
@@ -132,6 +134,7 @@ protected:
   HDC m_screenDC;
   HDC m_dc;
   IBitmapRenderer *m_bitmapRenderer;
+  util::mem_pool mem_source;
 };
 
 } // namespace detail

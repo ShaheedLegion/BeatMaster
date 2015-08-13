@@ -11,25 +11,25 @@ DWORD WINAPI Update(LPVOID lpParameter) {
   game::BitmapRenderer *bmp =
       static_cast<game::BitmapRenderer *>(g_renderer->screen.GetRenderer());
 
+  util::mem_pool& pool{g_renderer->screen.GetAllocator()};
+
   math::vec2 iResolution(static_cast<double>(g_renderer->screen.GetWidth()),
                          static_cast<double>(g_renderer->screen.GetHeight()));
-  math::vec3 light(160.0, 120.0, 240.0);
+  math::vec3 light(game::_width * 0.5, game::_height * 0.5, 240.0);
   std::vector<math::vec8> units;
 
   std::vector<game::texture> textures;
-  textures.push_back(game::texture("..//res//player.graw"));
-  textures.push_back(game::texture("..//res//enemy.graw"));
-  textures.push_back(game::texture("..//res//projectile.graw"));
+  textures.push_back(game::texture("..//res//player.graw", pool));
+  textures.push_back(game::texture("..//res//enemy.graw", pool));
+  textures.push_back(game::texture("..//res//projectile.graw", pool));
 
-  int tw = 320;
-  int th = 240;
   int offset = 0;
-  // This texture is simply the background image.
-  game::texture bg("..//res//bg[0].graw");
-  game::texture bar("../res//bar.graw");
-  game::texture img(math::vec2i(tw, th)); // the final composed image.
-  game::texture fg(math::vec2i(tw, th));  // the image containing the sprites.
-  game::texture sg(math::vec2i(tw, th));  // the shadow map
+
+  game::texture bg("..//res//bg[0].graw", pool);
+  game::texture bar("../res//bar.graw", pool);
+  game::texture img(math::vec2i(game::_width, game::_height), pool);
+  game::texture fg(math::vec2i(game::_width, game::_height), pool);
+  game::texture sg(math::vec2i(game::_width, game::_height), pool);
 
   auto end_time = std::chrono::high_resolution_clock::now();
   while (g_renderer->IsRunning()) {
@@ -67,8 +67,31 @@ DWORD WINAPI Update(LPVOID lpParameter) {
 }
 
 int main(int argc, char *argv[]) {
+
+#if UNIT_TEST
+  for (int j = 0; j < 2; ++j) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+    Sleep(10);
+    auto end_time = std::chrono::high_resolution_clock::now();
+
+    // We want an algorith that figures out the correct delta.
+    double startPos = 0;
+    double endPos = 100;
+    i = 100;
+    while (--i) {
+      auto ticks = std::chrono::duration_cast<std::chrono::milliseconds>(
+          end_time - start_time);
+      startPos += math::compute_delta(endPos, millis, 0);
+      Sleep(100);
+      end_time = std::chrono::high_resolution_clock::now();
+    }
+    std::cout << ""
+  }
+  return 0;
+#endif // UNIT_TEST
+
   game::BitmapRenderer bmp;
-  Renderer renderer("BSPTree", &Update,
+  Renderer renderer("BeatMaster", &Update,
                     reinterpret_cast<detail::IBitmapRenderer *>(&bmp));
   return 0;
 }
