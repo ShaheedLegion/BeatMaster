@@ -174,7 +174,7 @@ void handle_player_movement(math::vec8 &player, int dir, double millis,
                             double fps) {
   double xpf = math::compute_units(_width * 2.0, millis, fps);
   double ypf = math::compute_units(_height * 2.0, millis, fps);
-  player.v[firing_rate] -= math::compute_units(400.0, millis, fps);
+  player.v[firing_rate] -= math::compute_units(25.0, millis, fps);
   if (dir == 0)
     player.v[delta_x] = -xpf;
   if (dir == 2)
@@ -211,14 +211,25 @@ void handle_enemy_movement(math::vec8 &enemy, const math::vec4 &clip,
 
 void handle_projectile_movement(math::vec8 &projectile, const math::vec4 &clip,
                                 double millis, double fps) {
-  double ypf = math::compute_units(_height, millis, fps);
+  if (projectile.v[life] <= 0)
+    return;
 
-  projectile.v[life] -=
-      math::compute_units(projectile.v[cooldown], millis,
-                          fps); // subtract cooldown from life.
+  // Projectile lifespan is measured by collisions only.
+  if (projectile.v[delta_y] > 0) { // Player projectile.
+    // Else we just check if it reached the top of the screen.
+    if (projectile.v[y_pos] + 16.0 > clip.v[3]) {
+      projectile.v[life] = 0;
+      return;
+    }
+  } else { // Enemy projectile.
+    if (projectile.v[y_pos] < clip.v[1] + 16.0) {
+      projectile.v[life] = 0;
+      return;
+    }
+  }
 
-  if (projectile.v[life] > 0 && projectile.v[delta_y] == 0)
-    projectile.v[delta_y] = -ypf;
+  if (projectile.v[delta_y] == 0)
+    projectile.v[delta_y] = -math::compute_units(_height, millis, fps);
 }
 
 void fire_projectiles(std::vector<math::vec8> &units, double millis,
@@ -244,7 +255,7 @@ void fire_projectiles(std::vector<math::vec8> &units, double millis,
                   fps);                                   // Delta->target.
               bullet.v[delta_y] = enemy.v[delta_y] * 2.0; // set speed
               bullet.v[life] =
-                  math::compute_units(100, millis, fps); // life left
+                  math::compute_units(24000, millis, fps); // life left
               enemy.v[firing_rate] = bullet.v[life];
               break; // break out of this loop since we found a candidate.
             }
@@ -255,9 +266,9 @@ void fire_projectiles(std::vector<math::vec8> &units, double millis,
               bullet.v[x_pos] = player.v[x_pos]; // set x
               bullet.v[y_pos] = player.v[y_pos]; // set y
               bullet.v[delta_x] = 0;             // Delta->target.
-              bullet.v[delta_y] = math::compute_units(_height, millis, fps);
+              bullet.v[delta_y] = math::compute_units(_height * 5, millis, fps);
               bullet.v[life] =
-                  math::compute_units(100, millis, fps); // life left
+                  math::compute_units(1000, millis, fps); // life left
               player.v[firing_rate] = bullet.v[life];
               break; // break out of this loop since we found a candidate.
             }
