@@ -83,7 +83,7 @@ struct texture {
     int len = bounds.v[x_pos] * bounds.v[y_pos];
     tex = reinterpret_cast<detail::Uint32 *>(
         m_allocator.alloc(len * sizeof(detail::Uint32)));
-    // tex = new detail::Uint32[len];
+
     // Now that we have width and height, we can start reading pixels.
     fread(tex, sizeof(detail::Uint32), len, input);
 
@@ -110,23 +110,17 @@ struct texture {
 
     int len(bounds.v[x_pos] * rowsFromOther);
     util::memcpy(tex, other.tex + (finalOffset * other.bounds.v[x_pos]), len);
-    // memcpy(tex, other.tex + (finalOffset * other.bounds.v[x_pos]),
-    //       len * sizeof(detail::Uint32));
 
     if (wrapRows)
       util::memcpy(tex + len, other.tex, (wrapRows * other.bounds.v[x_pos]));
-    // memcpy(tex + len, other.tex,
-    //       (wrapRows * other.bounds.v[x_pos]) * sizeof(detail::Uint32));
   }
 
   void clear() {
     int len(bounds.v[x_pos] * bounds.v[y_pos]);
     util::memset(tex, 0, len);
-    // memset(tex, 0, len * sizeof(detail::Uint32));
   }
 
   ~texture() {
-    // delete[] tex;
     // Never delete tex - we don't own the memory.
     tex = nullptr;
   }
