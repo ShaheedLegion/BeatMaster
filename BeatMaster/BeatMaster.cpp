@@ -1,5 +1,6 @@
 // BeatMaster.cpp : Contains rendering functions for application.
 // Shaheed Abdol - 2015.
+#include <crtdbg.h>
 #include "Game.hpp"
 #include <chrono>
 
@@ -77,6 +78,7 @@ DWORD WINAPI Update(LPVOID lpParameter) {
 }
 
 int main(int argc, char *argv[]) {
+  _CrtSetDbgFlag(0);
   game::BitmapRenderer bmp;
   Renderer renderer("BeatMaster", &Update,
                     reinterpret_cast<detail::IBitmapRenderer *>(&bmp));

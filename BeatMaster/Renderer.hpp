@@ -1,8 +1,17 @@
 #pragma once
 #ifndef RENDERER_HPP_INCLUDED
 #define RENDERER_HPP_INCLUDED
-
 #define WIN32_LEAN_AND_MEAN
+#define NOCOMPMAN
+#define NOVIDEO
+#define NOAVIFMT
+#define NOMMREG
+#define NOAVIFILE
+#define NOMCIWND
+#define NOAVICAP
+#define NOMSACM
+#define _NO_DEBUG_HEAP 1
+
 #include <Windows.h>
 #include <string>
 #include <vector>
@@ -15,6 +24,7 @@
 #define _WW (1024)
 #define _WH (768)
 #define _BPP 32
+
 
 namespace detail {
 
